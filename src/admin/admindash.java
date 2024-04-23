@@ -5,9 +5,17 @@
  */
 package admin;
 
+import config.dbconnector;
 import form.login;
+import form.sign;
 import java.awt.Color;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -21,10 +29,12 @@ public class admindash extends javax.swing.JFrame {
     public admindash() {
         initComponents();
     }
+    public dbconnector db = new dbconnector();
     
     Color nav = new Color(204,0,0);
      Color ex = new Color(102,0,0);
-
+     
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -35,22 +45,21 @@ public class admindash extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         us = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        name = new javax.swing.JLabel();
+        lblid = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setBackground(new java.awt.Color(153, 0, 0));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        jLabel1.setFont(new java.awt.Font("DialogInput", 1, 24)); // NOI18N
-        jLabel1.setText("Admin Dashboard");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 220, 40));
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pics/logout.png"))); // NOI18N
         jLabel2.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -59,6 +68,10 @@ public class admindash extends javax.swing.JFrame {
             }
         });
         jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(780, 10, -1, -1));
+
+        jLabel5.setFont(new java.awt.Font("DialogInput", 1, 24)); // NOI18N
+        jLabel5.setText("Admin Dashboard");
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 220, 40));
 
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 840, 70));
 
@@ -85,7 +98,32 @@ public class admindash extends javax.swing.JFrame {
         jLabel4.setText("  USERS");
         us.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 50, 30));
 
-        jPanel2.add(us, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 140, 80, -1));
+        jPanel2.add(us, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 190, 80, -1));
+
+        jPanel3.setBackground(new java.awt.Color(102, 0, 0));
+        jPanel3.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        name.setFont(new java.awt.Font("DialogInput", 1, 18)); // NOI18N
+        name.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        name.setText("0");
+        name.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                nameMouseClicked(evt);
+            }
+        });
+        jPanel3.add(name, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 60, 220, 80));
+
+        lblid.setFont(new java.awt.Font("DialogInput", 1, 18)); // NOI18N
+        lblid.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblid.setText("0");
+        lblid.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblidMouseClicked(evt);
+            }
+        });
+        jPanel3.add(lblid, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 220, 40));
+
+        jPanel2.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 230, 140));
 
         getContentPane().add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 840, 380));
 
@@ -98,6 +136,8 @@ public class admindash extends javax.swing.JFrame {
         if(a == 0){
             login op = new login();
             op.setVisible(true);
+             
+            JFrame mainFrame = (JFrame)SwingUtilities.getWindowAncestor(this);
             this.dispose();
         }
     }//GEN-LAST:event_jLabel2MouseClicked
@@ -112,10 +152,44 @@ public class admindash extends javax.swing.JFrame {
 
     private void usMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_usMouseClicked
         users op = new users();
-        
         op.setVisible(true);
-        this.dispose();
+     
+         
     }//GEN-LAST:event_usMouseClicked
+
+    private void nameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_nameMouseClicked
+      sign op = new sign();
+       op.action = "up";
+       op.reg.setText("Update");
+       op.cmdsave.setText("Update");
+       op.setVisible(true);
+       op.txtid.disable();
+       op.type.disable();
+       try{
+           ResultSet res = db.getData("SELECT * FROM admin WHERE id = '"+lblid.getText()+"'");
+          
+          
+           while(res.next()){
+   
+                
+               op.txtid.setText(res.getString("id"));
+               op.txtname.setText(res.getString("Name"));
+               op.txtlast.setText(res.getString("Last"));
+               op.txtemail.setText(res.getString("email"));
+               op.txtuser.setText(res.getString("user"));
+               op.txtpass.setText(res.getString("pass"));
+               op.type.setSelectedItem(res.getString("type"));
+           }
+           
+       }catch(SQLException e){
+           
+           System.out.println("Error"+ e.getLocalizedMessage());
+       }
+    }//GEN-LAST:event_nameMouseClicked
+
+    private void lblidMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblidMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_lblidMouseClicked
 
     /**
      * @param args the command line arguments
@@ -153,12 +227,15 @@ public class admindash extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    public javax.swing.JLabel lblid;
+    public javax.swing.JLabel name;
     private javax.swing.JPanel us;
     // End of variables declaration//GEN-END:variables
 }

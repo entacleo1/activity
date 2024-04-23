@@ -8,8 +8,12 @@ package form;
 import admin.admindash;
 import config.dbconnector;
 import java.awt.event.KeyEvent;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import user.userdash;
 
@@ -65,6 +69,27 @@ public class login extends javax.swing.JFrame {
         }
 
     }
+     
+     
+    
+     public static String passHash(String pass){
+         try{
+             MessageDigest md = MessageDigest.getInstance("SHA");
+             md.update(pass.getBytes());
+             byte[] rb = md.digest();
+             StringBuilder sb = new StringBuilder();
+             
+             for(byte b: rb){
+                 sb.append(String.format("%02x", b));
+             }
+             
+             return sb.toString();
+             
+         }catch(NoSuchAlgorithmException ex){
+         
+         }
+         return null;
+     }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -135,14 +160,31 @@ public class login extends javax.swing.JFrame {
              JOptionPane.showMessageDialog(null,"Invalid");
              txtuser.setText("");
              txtpass.setText("");
+         
          }else{
             if(stat(txtuser.getText())){
                 if(type(txtuser.getText())){
                 admindash open = new admindash();
              
-                JOptionPane.showMessageDialog(null,"Welcome Admin");
-                open.setVisible(true);
-                this.dispose();
+               try {
+                     String sq = "SELECT * FROM admin WHERE user = '" +txtuser.getText()+ "'";
+                     ResultSet res = connector.getData(sq);
+                     if(res.next()){
+                         String n = res.getString("Name");
+                         String l = res.getString("Last");
+                         String i = res.getString("id");
+                          open.name.setText("<html><body><center>"+l +","+ n +"</center></body></html>");
+                          open.lblid.setText(i);
+                         
+                     }
+                     
+                 } catch (SQLException ex) {
+                     Logger.getLogger(login.class.getName()).log(Level.SEVERE, null, ex);
+                 }
+             
+            JOptionPane.showMessageDialog(null,"Welcome Admin");
+            open.setVisible(true);
+            this.dispose();
               }else{
                     userdash us = new userdash();
                     JOptionPane.showMessageDialog(null,"Welcome");
@@ -153,13 +195,13 @@ public class login extends javax.swing.JFrame {
             }else{
                 JOptionPane.showMessageDialog(null, "Your account is pending. Please wait for activation.");
             }
-              
-         }
+        }
     }//GEN-LAST:event_cmdlogMouseClicked
 
     private void txtpassKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtpassKeyPressed
-      if(evt.getKeyCode() == KeyEvent.VK_ENTER){
-          if(!loginAcc(txtuser.getText(),txtpass.getText())){
+      String password = passHash(txtpass.getText());
+        if(evt.getKeyCode() == KeyEvent.VK_ENTER){
+          if(!loginAcc(txtuser.getText(),password)){
              JOptionPane.showMessageDialog(null,"Invalid");
              txtuser.setText("");
              txtpass.setText("");
@@ -168,14 +210,47 @@ public class login extends javax.swing.JFrame {
                 if(type(txtuser.getText())){
                 admindash open = new admindash();
              
-                JOptionPane.showMessageDialog(null,"Welcome Admin");
-                open.setVisible(true);
-                this.dispose();
+              
+               try {
+                     String sq = "SELECT * FROM admin WHERE user = '" +txtuser.getText()+ "'";
+                     ResultSet res = connector.getData(sq);
+                   if(res.next()){
+                         String n = res.getString("Name");
+                         String l = res.getString("Last");
+                         String i = res.getString("id");
+                          open.name.setText("<html><body><center>"+l +","+ n +"</center></body></html>");
+                          open.lblid.setText(i);
+                         
+                     }
+                     
+                 } catch (SQLException ex) {
+                     Logger.getLogger(login.class.getName()).log(Level.SEVERE, null, ex);
+                 }
+             
+            JOptionPane.showMessageDialog(null,"Welcome Admin");
+            open.setVisible(true);
+            this.dispose();
               }else{
                     userdash us = new userdash();
-                    JOptionPane.showMessageDialog(null,"Welcome");
-                    us.setVisible(true);
-                    this.dispose();
+                    
+               try {
+                     String sq = "SELECT * FROM admin WHERE user = '" +txtuser.getText()+ "'";
+                     ResultSet res = connector.getData(sq);
+                     if(res.next()){
+                         String n = res.getString("Name");
+                         String l = res.getString("Last");
+                         String i = res.getString("id");
+                         us.name.setText("<html><body><center>"+l +","+ n +"</center></body></html>");
+                         us.lblid.setText(i);
+                     }
+                     
+                 } catch (SQLException ex) {
+                     Logger.getLogger(login.class.getName()).log(Level.SEVERE, null, ex);
+                 }
+             
+            JOptionPane.showMessageDialog(null,"Welcome User");
+            us.setVisible(true);
+            this.dispose();
                 }
                
             }else{
@@ -188,7 +263,9 @@ public class login extends javax.swing.JFrame {
 
     private void signupMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_signupMouseClicked
       sign op = new sign();
-      
+      op.action = "reg";
+      op.reg.setText("Register");
+      op.cmdsave.setText("Save");
       op.setVisible(true);
       this.dispose();
     }//GEN-LAST:event_signupMouseClicked

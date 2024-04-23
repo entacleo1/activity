@@ -107,7 +107,9 @@ public class statup extends javax.swing.JFrame {
               + "WHERE id = '"+idno.getText()+"'");
           
       
-          
+          users op = new users();
+          op.setVisible(true);
+          this.dispose();
       
     }//GEN-LAST:event_jButton1MouseClicked
 

@@ -6,7 +6,7 @@
 package admin;
 
 import config.dbconnector;
-import form.login;
+
 import java.awt.Color;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,7 +20,7 @@ import net.proteanit.sql.DbUtils;
  *
  * @author entac
  */
-public class users extends javax.swing.JFrame {
+public final class users extends javax.swing.JFrame {
 
     /**
      * Creates new form admindash
@@ -147,8 +147,8 @@ public class users extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseClicked
-        
-       new admindash().setVisible(true);
+   
+       
        this.dispose();
     }//GEN-LAST:event_jLabel2MouseClicked
 

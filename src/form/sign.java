@@ -2,6 +2,9 @@
 package form;
 
 import config.dbconnector;
+import java.awt.event.KeyEvent;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
@@ -17,6 +20,7 @@ public class sign extends javax.swing.JFrame {
      */
     
     dbconnector db = new dbconnector();
+    public String action;
     
     public sign() {
         initComponents();
@@ -55,6 +59,27 @@ public class sign extends javax.swing.JFrame {
         }
         
     }
+  
+    
+     public static String passHash(String pass){
+         try{
+             MessageDigest md = MessageDigest.getInstance("SHA");
+             md.update(pass.getBytes());
+             byte[] rb = md.digest();
+             StringBuilder sb = new StringBuilder();
+             
+             for(byte b: rb){
+                 sb.append(String.format("%02x", b));
+             }
+             
+             return sb.toString();
+             
+         }catch(NoSuchAlgorithmException ex){
+         
+         }
+         return null;
+     }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -66,7 +91,7 @@ public class sign extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        reg = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         txtname = new javax.swing.JTextField();
         txtlast = new javax.swing.JTextField();
@@ -89,9 +114,9 @@ public class sign extends javax.swing.JFrame {
         jPanel1.setBackground(new java.awt.Color(204, 0, 0));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jLabel1.setFont(new java.awt.Font("DialogInput", 1, 24)); // NOI18N
-        jLabel1.setText("Register");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 130, 40));
+        reg.setFont(new java.awt.Font("DialogInput", 1, 24)); // NOI18N
+        reg.setText("0");
+        jPanel1.add(reg, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 130, 40));
 
         jLabel2.setText("ID");
         jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 70, -1, 30));
@@ -123,16 +148,25 @@ public class sign extends javax.swing.JFrame {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cmdcancelMouseClicked(evt);
             }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                cmdcancelMouseEntered(evt);
+            }
         });
         jPanel1.add(cmdcancel, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 360, 80, 30));
 
-        cmdsave.setText("Save");
+        cmdsave.setText("0");
         cmdsave.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cmdsaveMouseClicked(evt);
             }
         });
         jPanel1.add(cmdsave, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 360, 80, 30));
+
+        txtpass.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtpassKeyPressed(evt);
+            }
+        });
         jPanel1.add(txtpass, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 270, 150, 30));
 
         jLabel8.setText("Name");
@@ -159,6 +193,13 @@ public class sign extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cmdsaveMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cmdsaveMouseClicked
+       switch(action){
+           
+           case "reg":
+        
+        String password = passHash(txtpass.getText());
+        
+        
         if(txtid.getText().isEmpty() || txtname.getText().isEmpty() || txtlast.getText().isEmpty() || txtemail.getText().isEmpty() 
                 || txtuser.getText().isEmpty() || txtpass.getText().isEmpty()){
             
@@ -171,8 +212,9 @@ public class sign extends javax.swing.JFrame {
         }else{
             if(db.insertData("INSERT INTO admin (id, Name, Last, email, type, user, pass, status) "
                     + "VALUES ('"+txtid.getText()+"','"+txtname.getText()+"','"+txtlast.getText()+"','"+txtemail.getText()+"','"+type.getSelectedItem()+"',"
-                            + "'"+txtuser.getText()+"','"+txtpass.getText()+"','Pending')"))
+                            + "'"+txtuser.getText()+"','"+password+"','Pending')"))
             {
+               
                 JOptionPane.showMessageDialog(null,"Saved");
                 login log = new login();
                 log.setVisible(true);
@@ -181,15 +223,83 @@ public class sign extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null,"Error");
             }
             
+            }
+        
+            break;
+           case "up":
+              
+                String pass = passHash(txtpass.getText());
+            if (txtpass.getText().length() < 8) {
+             JOptionPane.showMessageDialog(null, "Password must be 8 or more characters");
+        } else {
+             db.update("UPDATE admin SET Name = '" + txtname.getText() + "', Last = '" + txtlast.getText() + "', "
+             + "email = '" + txtemail.getText() + "', user = '" + txtuser.getText() + "',"
+                     + " pass = '" + pass + "' WHERE id = '"+txtid.getText()+"' ");
+}
+               this.dispose();
+               break;
         }
     }//GEN-LAST:event_cmdsaveMouseClicked
 
     private void cmdcancelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cmdcancelMouseClicked
-      int l = JOptionPane.showConfirmDialog(null,"Are You Sure you Want to Cancel?","Select" , JOptionPane.YES_NO_OPTION);
+        switch(action){
+            
+            case "reg":   
+        int l = JOptionPane.showConfirmDialog(null,"Are You Sure you Want to Cancel?","Select" , JOptionPane.YES_NO_OPTION);
       if(l == 0){
+          new login().setVisible(true);
           this.dispose();
       }
+      break;
+            case "up":
+                this.dispose();
+                break;
+    }
     }//GEN-LAST:event_cmdcancelMouseClicked
+
+    private void cmdcancelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cmdcancelMouseEntered
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmdcancelMouseEntered
+
+    private void txtpassKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtpassKeyPressed
+     if(evt.getKeyCode() == KeyEvent.VK_ENTER){
+        switch(action){
+           
+           case "reg":
+        
+        String password = passHash(txtpass.getText());
+        
+        if(txtid.getText().isEmpty() || txtname.getText().isEmpty() || txtlast.getText().isEmpty() || txtemail.getText().isEmpty() 
+                || txtuser.getText().isEmpty() || txtpass.getText().isEmpty()){
+            
+            JOptionPane.showMessageDialog(null,"All Fields Are Required");
+        }else if(txtpass.getText().length() < 8){
+            JOptionPane.showMessageDialog(null,"Password must be 8 or more Characters");
+            
+        }else if(duplicate()){
+            System.out.println("Duplicated");
+        }else{
+            if(db.insertData("INSERT INTO admin (id, Name, Last, email, type, user, pass, status) "
+                    + "VALUES ('"+txtid.getText()+"','"+txtname.getText()+"','"+txtlast.getText()+"','"+txtemail.getText()+"','"+type.getSelectedItem()+"',"
+                            + "'"+txtuser.getText()+"','"+password+"','Pending')"))
+            {
+               
+                JOptionPane.showMessageDialog(null,"Saved");
+                login log = new login();
+                log.setVisible(true);
+                this.dispose();
+            }else{
+                JOptionPane.showMessageDialog(null,"Error");
+            }
+            
+            }
+        
+            break;
+           case "up":
+               break;
+        }
+     }
+    }//GEN-LAST:event_txtpassKeyPressed
 
     /**
      * @param args the command line arguments
@@ -228,8 +338,7 @@ public class sign extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cmdcancel;
-    private javax.swing.JButton cmdsave;
-    private javax.swing.JLabel jLabel1;
+    public javax.swing.JButton cmdsave;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -238,12 +347,13 @@ public class sign extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextField txtemail;
-    private javax.swing.JTextField txtid;
-    private javax.swing.JTextField txtlast;
-    private javax.swing.JTextField txtname;
-    private javax.swing.JPasswordField txtpass;
-    private javax.swing.JTextField txtuser;
-    private javax.swing.JComboBox<String> type;
+    public javax.swing.JLabel reg;
+    public javax.swing.JTextField txtemail;
+    public javax.swing.JTextField txtid;
+    public javax.swing.JTextField txtlast;
+    public javax.swing.JTextField txtname;
+    public javax.swing.JPasswordField txtpass;
+    public javax.swing.JTextField txtuser;
+    public javax.swing.JComboBox<String> type;
     // End of variables declaration//GEN-END:variables
 }
